@@ -20,8 +20,20 @@
                 <p class="eyebrow">Pokédex party builder</p>
                 <h1 class="site-title">Pokeparty</h1>
             </div>
-            <p class="site-subtitle">Arma, ordena y optimiza tu equipo Pokémon.</p>
+            <p class="site-subtitle">
+                Arma, ordena y optimiza tu equipo Pokémon con datos reales desde PokeAPI.
+            </p>
         </header>
+
+        {% if messages %}
+            <section class="messages-stack">
+                {% for message in messages %}
+                    <article class="message message-{{ message.tags }}">
+                        {{ message }}
+                    </article>
+                {% endfor %}
+            </section>
+        {% endif %}
 
         <main class="page-content">
             {% block content %}{% endblock %}

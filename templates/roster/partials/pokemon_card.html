@@ -1,0 +1,113 @@
+<article class="pokemon-card">
+    <div class="pokemon-card__meta">
+        <div class="pokemon-card__head">
+            <span class="pokemon-id">#{{ entry.pokemon.external_id }}</span>
+            <span class="pokemon-position">
+                {{ entry.get_location_display }} · {{ entry.position }}
+            </span>
+        </div>
+
+        <div class="pokemon-card__body">
+            <div class="pokemon-card__left">
+                <img
+                    src="{{ entry.pokemon.image_url }}"
+                    alt="{{ entry.pokemon.display_name }}"
+                    class="pokemon-image"
+                >
+
+                <div class="pokemon-card__info">
+                    <h3 class="pokemon-name">{{ entry.pokemon.display_name }}</h3>
+
+                    <div class="type-chip-row">
+                        <span class="type-chip type-chip--{{ entry.pokemon.primary_type }}">
+                            {{ entry.pokemon.get_primary_type_display }}
+                        </span>
+
+                        {% if entry.pokemon.secondary_type %}
+                            <span class="type-chip type-chip--{{ entry.pokemon.secondary_type }}">
+                                {{ entry.pokemon.get_secondary_type_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <p class="power-line">Total Power · {{ entry.pokemon.total_power }}</p>
+                </div>
+            </div>
+
+            <div class="pokemon-card__right">
+                <div class="stat-row">
+                    <div class="stat-row__top">
+                        <span>HP</span>
+                        <span>{{ entry.pokemon.hp }}</span>
+                    </div>
+                    <div class="stat-bar">
+                        <span class="stat-bar__fill" style="width: {% widthratio entry.pokemon.hp 255 100 %}%"></span>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-row__top">
+                        <span>ATK</span>
+                        <span>{{ entry.pokemon.attack }}</span>
+                    </div>
+                    <div class="stat-bar">
+                        <span class="stat-bar__fill" style="width: {% widthratio entry.pokemon.attack 255 100 %}%"></span>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-row__top">
+                        <span>DEF</span>
+                        <span>{{ entry.pokemon.defense }}</span>
+                    </div>
+                    <div class="stat-bar">
+                        <span class="stat-bar__fill" style="width: {% widthratio entry.pokemon.defense 255 100 %}%"></span>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-row__top">
+                        <span>SPA</span>
+                        <span>{{ entry.pokemon.special_attack }}</span>
+                    </div>
+                    <div class="stat-bar">
+                        <span class="stat-bar__fill" style="width: {% widthratio entry.pokemon.special_attack 255 100 %}%"></span>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-row__top">
+                        <span>SPD</span>
+                        <span>{{ entry.pokemon.special_defense }}</span>
+                    </div>
+                    <div class="stat-bar">
+                        <span class="stat-bar__fill" style="width: {% widthratio entry.pokemon.special_defense 255 100 %}%"></span>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-row__top">
+                        <span>SPE</span>
+                        <span>{{ entry.pokemon.speed }}</span>
+                    </div>
+                    <div class="stat-bar">
+                        <span class="stat-bar__fill" style="width: {% widthratio entry.pokemon.speed 255 100 %}%"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if show_release %}
+        <form method="post" action="{% url 'roster:release' entry.id %}" class="pokemon-card__actions">
+            {% csrf_token %}
+            <button
+                type="submit"
+                class="danger-button"
+                onclick="return confirm('¿Seguro que quieres liberar este Pokémon?');"
+            >
+                Liberar Pokémon
+            </button>
+        </form>
+    {% endif %}
+</article>
