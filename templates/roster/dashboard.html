@@ -8,15 +8,17 @@
         <div class="section-heading">
             <p class="section-kicker">Captura</p>
             <h2>Selecciona un tipo</h2>
+            <p>Elige un tipo y captura un Pokémon random desde PokeAPI.</p>
         </div>
 
         <form method="post" action="{% url 'roster:capture' %}">
             {% csrf_token %}
+
             <div class="type-grid">
-                {% for radio in form.pokemon_type %}
-                    <label class="type-card">
-                        {{ radio.tag }}
-                        <span>{{ radio.choice_label }}</span>
+                {% for value, label in pokemon_types %}
+                    <label class="type-card type-card--{{ value }}">
+                        <input type="radio" name="pokemon_type" value="{{ value }}" required>
+                        <span>{{ label }}</span>
                     </label>
                 {% endfor %}
             </div>
@@ -34,7 +36,7 @@
             <p>{{ party_entries|length }}/6 Pokémon</p>
         </div>
 
-        <div class="pokemon-grid">
+        <div class="pokemon-grid pokemon-grid--party">
             {% for entry in party_entries %}
                 {% include "roster/partials/pokemon_card.html" with entry=entry show_release=False %}
             {% empty %}
@@ -50,7 +52,7 @@
             <p>{{ box_entries|length }} Pokémon</p>
         </div>
 
-        <div class="pokemon-grid">
+        <div class="pokemon-grid pokemon-grid--box">
             {% for entry in box_entries %}
                 {% include "roster/partials/pokemon_card.html" with entry=entry show_release=True %}
             {% empty %}

@@ -3,15 +3,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import PokemonTypeSelectionForm
-from .models import RosterEntry
+from .models import PokemonType, RosterEntry
 from .services.pokeapi import PokeAPIError, get_random_pokemon_by_type
 from .services.roster import RosterError, capture_pokemon, release_box_pokemon
 
 
 @require_GET
 def dashboard_view(request):
-    form = PokemonTypeSelectionForm()
-
     party_entries = (
         RosterEntry.objects.in_party()
         .with_pokemon()
@@ -25,7 +23,7 @@ def dashboard_view(request):
 
     context = {
         "page_title": "Pokeparty",
-        "form": form,
+        "pokemon_types": PokemonType.choices,
         "party_entries": party_entries,
         "box_entries": box_entries,
     }
