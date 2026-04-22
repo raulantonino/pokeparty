@@ -1,0 +1,69 @@
+<article class="pokemon-card">
+    <div class="pokemon-card-top">
+        <span class="pokemon-id">#{{ entry.pokemon.external_id }}</span>
+        <span class="pokemon-position">
+            {{ entry.get_location_display }} · {{ entry.position }}
+        </span>
+    </div>
+
+    <div class="pokemon-main">
+        <img
+            src="{{ entry.pokemon.image_url }}"
+            alt="{{ entry.pokemon.display_name }}"
+            class="pokemon-image"
+        >
+
+        <div>
+            <h3 class="pokemon-name">{{ entry.pokemon.display_name }}</h3>
+
+            <div class="type-chip-row">
+                <span class="type-chip">{{ entry.pokemon.get_primary_type_display }}</span>
+                {% if entry.pokemon.secondary_type %}
+                    <span class="type-chip">{{ entry.pokemon.get_secondary_type_display }}</span>
+                {% endif %}
+            </div>
+
+            <p class="power-line">Total Power: {{ entry.pokemon.total_power }}</p>
+        </div>
+    </div>
+
+    <div class="stats-list">
+        <div class="stat-row">
+            <span>HP</span>
+            <span>{{ entry.pokemon.hp }}</span>
+        </div>
+        <div class="stat-row">
+            <span>ATK</span>
+            <span>{{ entry.pokemon.attack }}</span>
+        </div>
+        <div class="stat-row">
+            <span>DEF</span>
+            <span>{{ entry.pokemon.defense }}</span>
+        </div>
+        <div class="stat-row">
+            <span>SPA</span>
+            <span>{{ entry.pokemon.special_attack }}</span>
+        </div>
+        <div class="stat-row">
+            <span>SPD</span>
+            <span>{{ entry.pokemon.special_defense }}</span>
+        </div>
+        <div class="stat-row">
+            <span>SPE</span>
+            <span>{{ entry.pokemon.speed }}</span>
+        </div>
+    </div>
+
+    {% if show_release %}
+        <form method="post" action="{% url 'roster:release' entry.id %}">
+            {% csrf_token %}
+            <button
+                type="submit"
+                class="danger-button"
+                onclick="return confirm('¿Seguro que quieres liberar este Pokémon?');"
+            >
+                Liberar Pokémon
+            </button>
+        </form>
+    {% endif %}
+</article>

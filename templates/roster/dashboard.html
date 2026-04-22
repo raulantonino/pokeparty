@@ -1,27 +1,62 @@
 {% extends "base.html" %}
 
-{% block title %}Pokeparty | Inicio{% endblock %}
+{% block title %}Pokeparty | Dashboard{% endblock %}
 
 {% block content %}
-<section class="dashboard-grid">
-    <section class="glass-panel hero-panel">
-        <p class="section-kicker">Challenge setup</p>
-        <h2>Base del proyecto lista</h2>
-        <p>
-            Esta será la pantalla principal de Pokeparty. Aquí iremos agregando el
-            selector visual de tipos, la captura random, la Party, la PC Box y la lógica
-            de optimización.
-        </p>
+<section class="dashboard-layout">
+    <section class="glass-panel capture-panel">
+        <div class="section-heading">
+            <p class="section-kicker">Captura</p>
+            <h2>Selecciona un tipo</h2>
+        </div>
+
+        <form method="post" action="{% url 'roster:capture' %}">
+            {% csrf_token %}
+            <div class="type-grid">
+                {% for radio in form.pokemon_type %}
+                    <label class="type-card">
+                        {{ radio.tag }}
+                        <span>{{ radio.choice_label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="primary-button">
+                Capturar Pokémon random
+            </button>
+        </form>
     </section>
 
-    <section class="glass-panel column-panel">
-        <h3>Party</h3>
-        <p>Aún no hay Pokémon capturados.</p>
+    <section class="glass-panel list-panel">
+        <div class="section-heading">
+            <p class="section-kicker">Equipo principal</p>
+            <h2>Party</h2>
+            <p>{{ party_entries|length }}/6 Pokémon</p>
+        </div>
+
+        <div class="pokemon-grid">
+            {% for entry in party_entries %}
+                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=False %}
+            {% empty %}
+                <p class="empty-state">Aún no hay Pokémon en la Party.</p>
+            {% endfor %}
+        </div>
     </section>
 
-    <section class="glass-panel column-panel">
-        <h3>PC Box</h3>
-        <p>Aún no hay Pokémon en reserva.</p>
+    <section class="glass-panel list-panel">
+        <div class="section-heading">
+            <p class="section-kicker">Reserva</p>
+            <h2>PC Box</h2>
+            <p>{{ box_entries|length }} Pokémon</p>
+        </div>
+
+        <div class="pokemon-grid">
+            {% for entry in box_entries %}
+                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=True %}
+            {% empty %}
+                <p class="empty-state">Aún no hay Pokémon en la PC Box.</p>
+            {% endfor %}
+        </div>
     </section>
 </section>
 {% endblock %}
