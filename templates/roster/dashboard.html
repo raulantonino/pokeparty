@@ -13,6 +13,8 @@
 
         <form method="post" action="{% url 'roster:capture' %}">
             {% csrf_token %}
+            <input type="hidden" name="sort_party" value="{{ sort_party }}">
+            <input type="hidden" name="sort_box" value="{{ sort_box }}">
 
             <div class="type-grid">
                 {% for value, label in pokemon_types %}
@@ -23,22 +25,50 @@
                 {% endfor %}
             </div>
 
-            <button type="submit" class="primary-button">
-                Capturar Pokémon random
+            <div class="capture-actions">
+                <button type="submit" class="primary-button">
+                    Capturar Pokémon random
+                </button>
+            </div>
+        </form>
+
+        <form method="post" action="{% url 'roster:optimize' %}" class="optimize-form">
+            {% csrf_token %}
+            <input type="hidden" name="sort_party" value="{{ sort_party }}">
+            <input type="hidden" name="sort_box" value="{{ sort_box }}">
+
+            <button type="submit" class="secondary-button">
+                Mejor equipo posible
             </button>
         </form>
     </section>
 
     <section class="glass-panel list-panel">
-        <div class="section-heading">
-            <p class="section-kicker">Equipo principal</p>
-            <h2>Party</h2>
-            <p>{{ party_entries|length }}/6 Pokémon</p>
+        <div class="panel-top">
+            <div class="section-heading">
+                <p class="section-kicker">Equipo principal</p>
+                <h2>Party</h2>
+                <p>{{ party_entries|length }}/6 Pokémon</p>
+            </div>
+
+            <form method="get" class="sort-toolbar">
+                <input type="hidden" name="sort_box" value="{{ sort_box }}">
+                {% for value, label in sort_options %}
+                    <button
+                        type="submit"
+                        name="sort_party"
+                        value="{{ value }}"
+                        class="sort-chip{% if sort_party == value %} is-active{% endif %}"
+                    >
+                        {{ label }}
+                    </button>
+                {% endfor %}
+            </form>
         </div>
 
         <div class="pokemon-grid pokemon-grid--party">
             {% for entry in party_entries %}
-                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=False %}
+                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=False sort_party=sort_party sort_box=sort_box %}
             {% empty %}
                 <p class="empty-state">Aún no hay Pokémon en la Party.</p>
             {% endfor %}
@@ -46,15 +76,31 @@
     </section>
 
     <section class="glass-panel list-panel">
-        <div class="section-heading">
-            <p class="section-kicker">Reserva</p>
-            <h2>PC Box</h2>
-            <p>{{ box_entries|length }} Pokémon</p>
+        <div class="panel-top">
+            <div class="section-heading">
+                <p class="section-kicker">Reserva</p>
+                <h2>PC Box</h2>
+                <p>{{ box_entries|length }} Pokémon</p>
+            </div>
+
+            <form method="get" class="sort-toolbar">
+                <input type="hidden" name="sort_party" value="{{ sort_party }}">
+                {% for value, label in sort_options %}
+                    <button
+                        type="submit"
+                        name="sort_box"
+                        value="{{ value }}"
+                        class="sort-chip{% if sort_box == value %} is-active{% endif %}"
+                    >
+                        {{ label }}
+                    </button>
+                {% endfor %}
+            </form>
         </div>
 
         <div class="pokemon-grid pokemon-grid--box">
             {% for entry in box_entries %}
-                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=True %}
+                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=True sort_party=sort_party sort_box=sort_box %}
             {% empty %}
                 <p class="empty-state">Aún no hay Pokémon en la PC Box.</p>
             {% endfor %}

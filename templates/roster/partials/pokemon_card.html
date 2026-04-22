@@ -101,6 +101,8 @@
     {% if show_release %}
         <form method="post" action="{% url 'roster:release' entry.id %}" class="pokemon-card__actions">
             {% csrf_token %}
+            <input type="hidden" name="sort_party" value="{{ sort_party }}">
+            <input type="hidden" name="sort_box" value="{{ sort_box }}">
             <button
                 type="submit"
                 class="danger-button"

@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import ExpressionWrapper, F, IntegerField
 
 
 class TimeStampedModel(models.Model):
@@ -71,19 +70,8 @@ class Pokemon(TimeStampedModel):
         return self.name.replace("-", " ").title()
 
     @property
-    def total_power(self):
-        return (
-            self.hp
-            + self.attack
-            + self.defense
-            + self.special_attack
-            + self.special_defense
-            + self.speed
-        )
-
-    @property
-    def dominant_stat_name(self):
-        stats = {
+    def stats_map(self):
+        return {
             "hp": self.hp,
             "attack": self.attack,
             "defense": self.defense,
@@ -91,11 +79,18 @@ class Pokemon(TimeStampedModel):
             "special_defense": self.special_defense,
             "speed": self.speed,
         }
-        return max(stats, key=stats.get)
+
+    @property
+    def total_power(self):
+        return sum(self.stats_map.values())
+
+    @property
+    def dominant_stat_name(self):
+        return max(self.stats_map, key=self.stats_map.get)
 
     @property
     def dominant_stat_value(self):
-        return getattr(self, self.dominant_stat_name)
+        return max(self.stats_map.values())
 
 
 class RosterEntryQuerySet(models.QuerySet):
@@ -110,18 +105,6 @@ class RosterEntryQuerySet(models.QuerySet):
 
     def ordered_for_display(self):
         return self.with_pokemon().order_by("location", "position", "pokemon__external_id")
-
-    def annotate_total_power(self):
-        total_power_expression = ExpressionWrapper(
-            F("pokemon__hp")
-            + F("pokemon__attack")
-            + F("pokemon__defense")
-            + F("pokemon__special_attack")
-            + F("pokemon__special_defense")
-            + F("pokemon__speed"),
-            output_field=IntegerField(),
-        )
-        return self.annotate(total_power=total_power_expression)
 
 
 class RosterEntry(TimeStampedModel):

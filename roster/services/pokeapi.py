@@ -24,7 +24,19 @@ def _get_json(url: str) -> dict:
         raise PokeAPIError("PokeAPI devolvió una respuesta inválida.") from exc
 
 
-def get_random_pokemon_by_type(pokemon_type: str) -> dict:
+def extract_external_id_from_url(url: str) -> int | None:
+    try:
+        return int(url.rstrip("/").split("/")[-1])
+    except (AttributeError, ValueError, IndexError):
+        return None
+
+
+def get_random_pokemon_by_type(
+    pokemon_type: str,
+    excluded_external_ids: set[int] | None = None,
+) -> dict:
+    excluded_external_ids = excluded_external_ids or set()
+
     type_url = f"{POKEAPI_BASE_URL}/type/{pokemon_type}/"
     type_payload = _get_json(type_url)
 
@@ -32,7 +44,23 @@ def get_random_pokemon_by_type(pokemon_type: str) -> dict:
     if not pokemon_entries:
         raise PokeAPIError("No se encontraron Pokémon para ese tipo.")
 
-    selected_entry = random.choice(pokemon_entries)
+    available_entries = []
+    for entry in pokemon_entries:
+        pokemon_data = entry.get("pokemon", {})
+        pokemon_url = pokemon_data.get("url", "")
+        external_id = extract_external_id_from_url(pokemon_url)
+
+        if external_id is None:
+            continue
+        if external_id in excluded_external_ids:
+            continue
+
+        available_entries.append(entry)
+
+    if not available_entries:
+        raise PokeAPIError("Ya capturaste todos los Pokémon disponibles para ese tipo.")
+
+    selected_entry = random.choice(available_entries)
     pokemon_url = selected_entry["pokemon"]["url"]
 
     pokemon_payload = _get_json(pokemon_url)
