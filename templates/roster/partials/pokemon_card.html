@@ -30,7 +30,10 @@
                         {% endif %}
                     </div>
 
-                    <p class="power-line">Total Power · {{ entry.pokemon.total_power }}</p>
+                    <div class="power-pill">
+                        <span class="power-pill__label">Total Power</span>
+                        <strong class="power-pill__value">{{ entry.pokemon.total_power }}</strong>
+                    </div>
                 </div>
             </div>
 
@@ -105,10 +108,10 @@
             <input type="hidden" name="sort_box" value="{{ sort_box }}">
             <button
                 type="submit"
-                class="danger-button"
+                class="release-button"
                 onclick="return confirm('¿Seguro que quieres liberar este Pokémon?');"
             >
-                Liberar Pokémon
+                Liberar
             </button>
         </form>
     {% endif %}

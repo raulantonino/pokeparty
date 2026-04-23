@@ -31,24 +31,27 @@
                 </button>
             </div>
         </form>
-
-        <form method="post" action="{% url 'roster:optimize' %}" class="optimize-form">
-            {% csrf_token %}
-            <input type="hidden" name="sort_party" value="{{ sort_party }}">
-            <input type="hidden" name="sort_box" value="{{ sort_box }}">
-
-            <button type="submit" class="secondary-button">
-                Mejor equipo posible
-            </button>
-        </form>
     </section>
 
     <section id="party-section" class="glass-panel list-panel">
-        <div class="panel-top">
-            <div class="section-heading">
-                <p class="section-kicker">Equipo principal</p>
-                <h2>Party</h2>
-                <p>{{ party_entries|length }}/6 Pokémon</p>
+        <div class="panel-top panel-top--with-action">
+            <div class="panel-header-row">
+                <div class="section-heading">
+                    <p class="section-kicker">Equipo principal</p>
+                    <h2>Party</h2>
+                    <p>{{ party_entries|length }}/6 Pokémon</p>
+                </div>
+
+                <div class="panel-header-actions">
+                    <form method="post" action="{% url 'roster:optimize' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="sort_party" value="{{ sort_party }}">
+                        <input type="hidden" name="sort_box" value="{{ sort_box }}">
+                        <button type="submit" class="secondary-button">
+                            Mejor equipo posible
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <div class="sort-toolbar">
