@@ -19,7 +19,7 @@ from .services.roster import (
 )
 
 SORT_OPTIONS = [
-    ("position", "Orden actual"),
+    ("position", "Inicial"),
     ("hp", "HP"),
     ("attack", "ATK"),
     ("defense", "DEF"),
