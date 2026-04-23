@@ -1,119 +1,150 @@
-# Pokeparty - Project Decisions
+# Pokeparty - Decisiones del Proyecto
 
-## 1. Project context
+## 1. Contexto del proyecto
 
-- Project type: greenfield technical challenge with external API integration.
-- Main deliverable: code + technical documentation.
-- Main objective: build a portfolio-quality Django project with strong backend decisions, clean architecture, and polished UI.
-- Source of truth: challenge brief + project decisions + real project code.
+- Tipo de proyecto: challenge técnico nuevo (greenfield) con integración de API externa.
+- Entregable principal: código + documentación técnica.
+- Objetivo principal: construir un proyecto de portafolio en Django, con backend sólido, arquitectura clara, buenas prácticas visibles y una UI cuidada.
+- Fuente de verdad: enunciado del challenge + documento de decisiones + código real del proyecto.
 
-## 2. Product definition
+## 2. Definición del producto
 
-- The application allows the user to build and optimize a Pokémon party using real data from PokeAPI.
-- The project uses server-side rendered HTML with Django templates.
-- There is no separate frontend and no mobile app in v1.
-- There is no authentication system in v1.
-- There are no file uploads in v1.
+- La aplicación permite capturar, ordenar y optimizar una party Pokémon usando datos reales obtenidos desde PokeAPI.
+- El proyecto usa renderizado server-side con Django Templates.
+- No existe frontend separado ni aplicación móvil en la v1.
+- No existe sistema de autenticación en la v1.
+- No existen subidas de archivos en la v1.
 
-## 3. Core business rules
+## 3. Reglas principales del negocio
 
-- The user captures one random Pokémon based on a selected type.
-- A Pokémon cannot be duplicated in the current collection.
-- The Party can contain a maximum of 6 Pokémon.
-- Extra Pokémon go to the PC Box automatically.
-- A Pokémon can only be released from the PC Box.
-- Releasing a Pokémon removes the local roster entry only.
-- Pokémon data must persist in the local database.
-- The "best team possible" flow uses all 6 base stats:
+- El usuario captura un Pokémon random a partir de un tipo seleccionado.
+- No se permiten Pokémon duplicados en la colección actual.
+- La Party puede contener un máximo de 6 Pokémon.
+- Los excedentes se envían automáticamente a la PC Box.
+- Un Pokémon puede liberarse tanto desde la Party como desde la PC Box.
+- Si se libera un Pokémon desde la Party y existen Pokémon en la PC Box, sube automáticamente el Pokémon más fuerte de la Box.
+- Si se libera un Pokémon desde la Party y la Box está vacía, la Party simplemente se compacta.
+- Si se libera un Pokémon desde la PC Box, la Box se compacta.
+- Liberar un Pokémon elimina solo el `RosterEntry` local, no la ficha base normalizada del modelo `Pokemon`.
+- Los datos del Pokémon deben persistir en la base de datos local.
+- El flujo de “Mejor equipo posible” usa los 6 base stats:
   - hp
   - attack
   - defense
   - special_attack
   - special_defense
   - speed
-- Tie-breaks in optimization:
-  1. higher total_power
-  2. better type diversity in the final Party
-  3. stronger best individual stat
-  4. higher speed
-  5. lower external_id for deterministic ordering
+- Desempates en la optimización:
+  1. mayor `total_power`
+  2. mejor diversidad de tipos en la Party final
+  3. mayor stat individual dominante
+  4. mayor speed
+  5. menor `external_id` para mantener orden determinístico
 
-## 4. Architecture decisions
+## 4. Decisiones de arquitectura
 
-- Architecture style: Django SSR + ORM.
-- No DRF in v1.
-- External API: PokeAPI.
-- PokeAPI integration will live in a dedicated service layer.
-- Roster/optimization logic will live in a separate internal service layer.
-- Views must stay thin.
-- Query logic that repeats should move to queryset/manager or service layer.
+- Estilo de arquitectura: Django SSR + ORM.
+- No se usa DRF en la v1.
+- API externa: PokeAPI.
+- La integración con PokeAPI vive en una capa de servicios dedicada.
+- La lógica de roster y optimización vive en una capa de servicios separada.
+- Las vistas deben mantenerse delgadas.
+- La lógica de consultas repetidas debe ir a QuerySets, managers o servicios.
+- La lógica de ordenamiento por `total_power` se resuelve en Python, ya que Party y Box son conjuntos pequeños y no justifica complejidad adicional en ORM para este caso.
 
-## 5. Project structure
+## 5. Estructura del proyecto
 
-- Global config folder: `config/`
-- Main app: `roster`
-- Global templates folder: `templates/`
-- App templates folder: `templates/roster/`
-- Global static folder: `static/`
-- Docs folder: `docs/`
+- Carpeta global de configuración: `config/`
+- App principal: `roster`
+- Carpeta global de templates: `templates/`
+- Templates de la app: `templates/roster/`
+- Carpeta global de archivos estáticos: `static/`
+- Carpeta de documentación: `docs/`
 
-## 6. Code conventions
+## 6. Convenciones de código
 
-- Code language: English
-- UI language: Spanish
-- App names: English, lowercase
-- FBV names: snake_case
-- Template names: snake_case.html
-- URLs: namespaced
-- Environment variables: UPPER_SNAKE_CASE
+- Idioma del código: inglés
+- Idioma de la UI: español
+- Nombre de apps: inglés, minúsculas
+- Nombres de vistas FBV: `snake_case`
+- Templates: `snake_case.html`
+- URLs: con namespace
+- Variables de entorno: `UPPER_SNAKE_CASE`
 
-## 7. Environment decisions
+## 7. Decisiones de entorno
 
-- Local database: SQLite
-- Production database: to be defined later
-- Single `settings.py` in v1
-- Secrets loaded from `.env`
-- `.env` must never be committed
-- `.env.example` must contain placeholders only
+- Base de datos local: SQLite
+- Base de datos de producción: por definir más adelante
+- Un solo `settings.py` en la v1
+- Secretos cargados desde `.env`
+- `.env` nunca debe subirse al repositorio
+- `.env.example` debe contener solo placeholders
 
-## 8. Model decisions
+## 8. Decisiones de modelos
 
-- All domain models use `created_at` and `updated_at`
-- `__str__` is mandatory
-- No soft delete in v1
-- No UUIDs in v1
-- No money fields in this project
-- Important integrity rules should be enforced at database level when reasonable
+- Todos los modelos de dominio usan `created_at` y `updated_at`
+- `__str__` es obligatorio
+- No se usa soft delete en la v1
+- No se usan UUIDs en la v1
+- No hay campos monetarios en este proyecto
+- Las reglas importantes de integridad deben reforzarse a nivel de base de datos cuando sea razonable
 
-## 9. Domain model plan
+## 9. Modelo de dominio
 
 ### Pokemon
-Normalized Pokémon data retrieved from PokeAPI and cached locally.
+Representa la ficha base normalizada de un Pokémon obtenida desde PokeAPI y cacheada localmente.
 
 ### RosterEntry
-Represents a Pokémon currently present in the user's collection, either in the Party or in the PC Box.
+Representa la presencia actual de un Pokémon en la colección del usuario, ya sea en la Party o en la PC Box.
 
-## 10. Error handling decisions
+## 10. Manejo de errores
 
-- If PokeAPI fails, the page must not break.
-- The app must not save incomplete or partial Pokémon data.
-- The user should receive a friendly message.
-- The dashboard should remain usable.
+- Si PokeAPI falla, la página no debe romperse.
+- La app no debe guardar datos incompletos o parciales.
+- El usuario debe recibir un mensaje amigable.
+- El dashboard debe seguir siendo usable.
 
-## 11. Testing minimum
+## 11. Ordenamientos y navegación
 
-At minimum, test:
-- important model `__str__`
-- basic model constraints/logic
-- public dashboard response
-- main capture flow
-- optimization flow
+- Party y PC Box pueden ordenarse por separado.
+- Los criterios disponibles son:
+  - inicial
+  - hp
+  - attack
+  - defense
+  - speed
+  - total_power
+- Al usar acciones de ordenamiento o liberación, la interfaz debe volver a la sección correspondiente mediante anchors (`#party-section`, `#box-section`, `#capture-section`).
 
-## 12. Delivery expectations
+## 12. Decisiones de UI
 
-The final project must include:
-- clear README
-- setup instructions
-- run instructions
-- explanation of technical decisions
-- public GitHub repository
+- Dirección visual: mezcla de estética Pokémon, Y2K/retro-tech de inicios de los 2000 y glassmorphism moderado.
+- Intensidad visual: equilibrada.
+- Selector de tipos: grid visual, no dropdown.
+- Responsive desde la base.
+- `Total Power` debe tener un peso visual claro dentro de cada card.
+- Las acciones destructivas deben verse secundarias respecto a la información principal.
+
+## 13. Testing mínimo
+
+Como mínimo, se debe testear:
+- `__str__` y propiedades importantes del modelo
+- lógica principal de captura
+- prevención de duplicados
+- flujo Party / Box
+- liberación desde Party y Box
+- autopromoción desde Box a Party
+- ordenamiento por `total_power`
+- flujo de optimización
+- respuesta pública del dashboard
+- redirects principales con anchors
+
+## 14. Expectativas de entrega
+
+El proyecto final debe incluir:
+- README claro
+- instrucciones de instalación
+- instrucciones de ejecución
+- explicación de decisiones técnicas
+- tests ejecutables
+- repositorio público en GitHub
