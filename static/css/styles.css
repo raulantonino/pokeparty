@@ -586,3 +586,20 @@ h1, h2, h3, .eyebrow, .section-kicker, .pokemon-id, .pokemon-position {
         flex-direction: column;
     }
 }
+
+html {
+    scroll-behavior: smooth;
+}
+
+#capture-section,
+#party-section,
+#box-section {
+    scroll-margin-top: 24px;
+}
+
+.sort-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}

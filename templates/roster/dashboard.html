@@ -4,7 +4,7 @@
 
 {% block content %}
 <section class="dashboard-layout">
-    <section class="glass-panel capture-panel">
+    <section id="capture-section" class="glass-panel capture-panel">
         <div class="section-heading">
             <p class="section-kicker">Captura</p>
             <h2>Selecciona un tipo</h2>
@@ -43,7 +43,7 @@
         </form>
     </section>
 
-    <section class="glass-panel list-panel">
+    <section id="party-section" class="glass-panel list-panel">
         <div class="panel-top">
             <div class="section-heading">
                 <p class="section-kicker">Equipo principal</p>
@@ -51,31 +51,28 @@
                 <p>{{ party_entries|length }}/6 Pokémon</p>
             </div>
 
-            <form method="get" class="sort-toolbar">
-                <input type="hidden" name="sort_box" value="{{ sort_box }}">
+            <div class="sort-toolbar">
                 {% for value, label in sort_options %}
-                    <button
-                        type="submit"
-                        name="sort_party"
-                        value="{{ value }}"
+                    <a
+                        href="?sort_party={{ value }}&sort_box={{ sort_box }}#party-section"
                         class="sort-chip{% if sort_party == value %} is-active{% endif %}"
                     >
                         {{ label }}
-                    </button>
+                    </a>
                 {% endfor %}
-            </form>
+            </div>
         </div>
 
         <div class="pokemon-grid pokemon-grid--party">
             {% for entry in party_entries %}
-                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=False sort_party=sort_party sort_box=sort_box %}
+                {% include "roster/partials/pokemon_card.html" with entry=entry show_release=True sort_party=sort_party sort_box=sort_box %}
             {% empty %}
                 <p class="empty-state">Aún no hay Pokémon en la Party.</p>
             {% endfor %}
         </div>
     </section>
 
-    <section class="glass-panel list-panel">
+    <section id="box-section" class="glass-panel list-panel">
         <div class="panel-top">
             <div class="section-heading">
                 <p class="section-kicker">Reserva</p>
@@ -83,19 +80,16 @@
                 <p>{{ box_entries|length }} Pokémon</p>
             </div>
 
-            <form method="get" class="sort-toolbar">
-                <input type="hidden" name="sort_party" value="{{ sort_party }}">
+            <div class="sort-toolbar">
                 {% for value, label in sort_options %}
-                    <button
-                        type="submit"
-                        name="sort_box"
-                        value="{{ value }}"
+                    <a
+                        href="?sort_party={{ sort_party }}&sort_box={{ value }}#box-section"
                         class="sort-chip{% if sort_box == value %} is-active{% endif %}"
                     >
                         {{ label }}
-                    </button>
+                    </a>
                 {% endfor %}
-            </form>
+            </div>
         </div>
 
         <div class="pokemon-grid pokemon-grid--box">
