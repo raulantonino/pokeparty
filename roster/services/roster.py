@@ -116,15 +116,6 @@ def capture_pokemon(normalized_pokemon_data: dict) -> tuple[RosterEntry, bool]:
     return roster_entry, location == RosterEntry.Location.PARTY
 
 
-@transaction.atomic
-def release_box_pokemon(roster_entry: RosterEntry) -> None:
-    if roster_entry.location != RosterEntry.Location.BOX:
-        raise RosterError("Solo puedes liberar Pokémon desde la PC Box.")
-
-    roster_entry.delete()
-    compact_positions(RosterEntry.Location.BOX)
-
-
 def _entry_types(entry: RosterEntry) -> set[str]:
     types = {entry.pokemon.primary_type}
     if entry.pokemon.secondary_type:
@@ -143,6 +134,42 @@ def _base_ranking(entry: RosterEntry) -> tuple[int, int, int, int]:
         -entry.pokemon.speed,
         entry.pokemon.external_id,
     )
+
+
+def get_best_box_candidate() -> RosterEntry | None:
+    box_entries = list(
+        RosterEntry.objects.in_box()
+        .with_pokemon()
+    )
+    if not box_entries:
+        return None
+
+    return sorted(box_entries, key=_base_ranking)[0]
+
+
+@transaction.atomic
+def release_pokemon(roster_entry: RosterEntry) -> str | None:
+    origin = roster_entry.location
+    released_position = roster_entry.position
+
+    roster_entry.delete()
+
+    if origin == RosterEntry.Location.BOX:
+        compact_positions(RosterEntry.Location.BOX)
+        return None
+
+    promoted_entry = get_best_box_candidate()
+    if promoted_entry is None:
+        compact_positions(RosterEntry.Location.PARTY)
+        return None
+
+    promoted_name = promoted_entry.pokemon.display_name
+    promoted_entry.location = RosterEntry.Location.PARTY
+    promoted_entry.position = released_position
+    promoted_entry.save(update_fields=["location", "position", "updated_at"])
+
+    compact_positions(RosterEntry.Location.BOX)
+    return promoted_name
 
 
 def _park_entries(entries: list[RosterEntry]) -> None:

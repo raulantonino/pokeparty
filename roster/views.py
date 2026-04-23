@@ -15,11 +15,11 @@ from .services.roster import (
     get_sorted_entries,
     normalize_sort_key,
     optimize_best_team,
-    release_box_pokemon,
+    release_pokemon,
 )
 
 SORT_OPTIONS = [
-    ("position", "Posición"),
+    ("position", "Orden actual"),
     ("hp", "HP"),
     ("attack", "ATK"),
     ("defense", "DEF"),
@@ -28,14 +28,17 @@ SORT_OPTIONS = [
 ]
 
 
-def build_dashboard_url(sort_party: str, sort_box: str) -> str:
+def build_dashboard_url(sort_party: str, sort_box: str, anchor: str | None = None) -> str:
     params = urlencode(
         {
             "sort_party": normalize_sort_key(sort_party),
             "sort_box": normalize_sort_key(sort_box),
         }
     )
-    return f"{reverse('roster:dashboard')}?{params}"
+    url = f"{reverse('roster:dashboard')}?{params}"
+    if anchor:
+        url = f"{url}#{anchor}"
+    return url
 
 
 @require_GET
@@ -66,7 +69,7 @@ def capture_pokemon_view(request):
 
     if not form.is_valid():
         messages.error(request, "Debes seleccionar un tipo válido.")
-        return redirect(build_dashboard_url(sort_party, sort_box))
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor="capture-section"))
 
     pokemon_type = form.cleaned_data["pokemon_type"]
 
@@ -78,17 +81,18 @@ def capture_pokemon_view(request):
         roster_entry, sent_to_party = capture_pokemon(normalized_pokemon)
     except PokeAPIError as exc:
         messages.error(request, str(exc))
-        return redirect(build_dashboard_url(sort_party, sort_box))
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor="capture-section"))
     except RosterError as exc:
         messages.warning(request, str(exc))
-        return redirect(build_dashboard_url(sort_party, sort_box))
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor="capture-section"))
 
     destination = "Party" if sent_to_party else "PC Box"
     messages.success(
         request,
         f"{roster_entry.pokemon.display_name} fue capturado y enviado a {destination}.",
     )
-    return redirect(build_dashboard_url(sort_party, sort_box))
+    anchor = "party-section" if sent_to_party else "box-section"
+    return redirect(build_dashboard_url(sort_party, sort_box, anchor=anchor))
 
 
 @require_POST
@@ -100,13 +104,13 @@ def optimize_best_team_view(request):
         party_count, box_count = optimize_best_team()
     except RosterError as exc:
         messages.warning(request, str(exc))
-        return redirect(build_dashboard_url(sort_party, sort_box))
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor="party-section"))
 
     messages.success(
         request,
         f"Equipo optimizado: {party_count} Pokémon quedaron en la Party y {box_count} en la PC Box.",
     )
-    return redirect(build_dashboard_url(sort_party, sort_box))
+    return redirect(build_dashboard_url(sort_party, sort_box, anchor="party-section"))
 
 
 @require_POST
@@ -119,12 +123,26 @@ def release_pokemon_view(request, entry_id: int):
         pk=entry_id,
     )
 
+    pokemon_name = roster_entry.pokemon.display_name
+    origin = roster_entry.location
+
     try:
-        pokemon_name = roster_entry.pokemon.display_name
-        release_box_pokemon(roster_entry)
+        promoted_name = release_pokemon(roster_entry)
     except RosterError as exc:
         messages.error(request, str(exc))
-        return redirect(build_dashboard_url(sort_party, sort_box))
+        anchor = "party-section" if origin == RosterEntry.Location.PARTY else "box-section"
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor=anchor))
+
+    if origin == RosterEntry.Location.PARTY and promoted_name:
+        messages.success(
+            request,
+            f"{pokemon_name} fue liberado de la Party. {promoted_name} subió automáticamente desde la PC Box.",
+        )
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor="party-section"))
+
+    if origin == RosterEntry.Location.PARTY:
+        messages.success(request, f"{pokemon_name} fue liberado de la Party.")
+        return redirect(build_dashboard_url(sort_party, sort_box, anchor="party-section"))
 
     messages.success(request, f"{pokemon_name} fue liberado de la PC Box.")
-    return redirect(build_dashboard_url(sort_party, sort_box))
+    return redirect(build_dashboard_url(sort_party, sort_box, anchor="box-section"))
