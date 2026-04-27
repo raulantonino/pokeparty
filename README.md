@@ -4,6 +4,10 @@ Pokeparty es una aplicación web construida con Django que permite capturar, ord
 
 El proyecto fue desarrollado como un challenge técnico, con foco en una arquitectura clara, backend sólido, buenas prácticas y una interfaz visual cuidada.
 
+## Demo online
+
+https://pokeparty-keqn.onrender.com
+
 ## Demo funcional del proyecto
 
 La aplicación permite:
@@ -19,16 +23,25 @@ La aplicación permite:
 
 ## Stack
 
+### Desarrollo
 - Python
 - Django
 - SQLite
 - Requests
 - python-dotenv
+
+### Producción
+- Render
+- Supabase PostgreSQL
+- Gunicorn
+- WhiteNoise
+
+### API externa
 - PokeAPI
 
 ## Arquitectura general
 
-El proyecto está construido como una app SSR con Django Templates + ORM.
+El proyecto está construido como una aplicación SSR con Django Templates + ORM.
 
 ### Decisiones principales
 
@@ -126,12 +139,14 @@ pip install -r requirements.txt
 
 Crear un archivo `.env` en la raíz del proyecto usando `.env.example` como referencia.
 
-Ejemplo:
+Ejemplo para desarrollo local:
 
 ```env
+DJANGO_SETTINGS_MODULE=config.settings.local
 SECRET_KEY=tu_clave_secreta
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
+CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
 ```
 
 ## Ejecución local
@@ -165,6 +180,7 @@ python manage.py test roster.tests -v 2
 ```text
 pokeparty/
 ├─ config/
+│  └─ settings/
 ├─ docs/
 ├─ roster/
 │  ├─ services/
@@ -172,6 +188,7 @@ pokeparty/
 ├─ static/
 ├─ templates/
 ├─ .env.example
+├─ build.sh
 ├─ manage.py
 └─ requirements.txt
 ```
@@ -185,6 +202,7 @@ pokeparty/
 - manejo de errores de API
 - tests de modelos, servicios y vistas
 - UI responsive desde la base
+- configuración separada por entorno (`local` / `production`)
 
 ## Mejoras futuras posibles
 
@@ -192,10 +210,9 @@ pokeparty/
 - comparación más explícita entre Pokémon
 - badges visuales para stat dominante
 - paginación o búsqueda si la Box crece mucho
-- deploy en producción
 - cobertura de tests más amplia
 - animaciones microinteractivas adicionales
 
 ## Estado actual
 
-Proyecto funcional y en estado sólido de portafolio.
+Proyecto funcional, deployado y en estado sólido de portafolio.
